@@ -1,0 +1,27 @@
+<h1>Semantic Search</h1>
+
+<form method="GET">
+
+    {{ form.as_p }}
+
+    <button type="submit">
+        Search
+    </button>
+
+</form>
+
+<hr>
+
+{% for score, bookmark in results %}
+
+    <h3>{{ bookmark.title }}</h3>
+
+    <p>{{ bookmark.summary }}</p>
+
+    <small>
+        Similarity: {{ score }}
+    </small>
+
+    <hr>
+
+{% endfor %}

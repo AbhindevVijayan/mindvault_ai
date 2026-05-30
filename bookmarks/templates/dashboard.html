@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dashboard</title>
+
+    <style>
+
+        body{
+            background:black;
+            color:white;
+            font-family:Arial;
+            padding:40px;
+        }
+
+        .card{
+            background:#222;
+            padding:20px;
+            margin-bottom:20px;
+            border-radius:10px;
+        }
+
+        a{
+            color:cyan;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <h1>MindVault Dashboard</h1>
+
+    <p>
+        Welcome {{ request.user.username }}
+    </p>
+
+    <a href="/">
+        Add Bookmark
+    </a>
+
+    <hr>
+
+    {% for bookmark in bookmarks %}
+
+        <div class="card">
+
+            <h2>
+                {{ bookmark.title }}
+            </h2>
+
+            <a href="{{ bookmark.url }}">
+                Open Link
+            </a>
+
+            <p>
+                {{ bookmark.summary }}
+            </p>
+
+        </div>
+
+    {% empty %}
+
+        <h3>No bookmarks yet</h3>
+
+    {% endfor %}
+
+</body>
+
+</html>

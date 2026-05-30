@@ -1,16 +1,20 @@
 from django.urls import path
-from .views import add_bookmark
 from .views import (
+    index,
     add_bookmark,
-    semantic_search
+    summarize,
+    semantic_search,
+    signup,
+    dashboard,
+    login_user
 )
-from .views import signup
-from .views import dashboard 
 
 urlpatterns = [
-    path('', add_bookmark, name='add_bookmark'),
+    path('', index, name='index'),
+    path('summarize/', summarize, name='summarize'),
     path('search/', semantic_search, name='semantic_search'),
     path('signup/', signup, name='signup'),
+    path('login/', login_user, name='login_user'),
     path('dashboard/', dashboard, name='dashboard'),
 ]
 

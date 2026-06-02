@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Bookmarks - MindVault{% endblock %}
+
+{% block content %}
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3>Recent Bookmarks</h3>
+      <div><a class="btn boc" href="{% url 'admin_panel' %}">Back to Home</a></div>
+    </div>
+
+    <div class="card p-3">
+      <ul class="list-group list-group-flush">
+        {% for b in bookmarks %}
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+              <div>
+                <div style="font-weight:600">{{ b.title }}</div>
+                <div style="font-size:.9rem;color:var(--tx3)">{{ b.url }}</div>
+                <div style="font-size:.85rem;color:var(--tx3)">By: {{ b.user.username }} — {{ b.created_at }}</div>
+              </div>
+              <div>
+                <a class="btn boc btn-sm" href="{% url 'admin_user_detail' b.user.id %}">User</a>
+                <a class="btn boc btn-sm" href="{% url 'admin_edit_bookmark' b.id %}">Edit</a>
+              </div>
+            </div>
+          </li>
+        {% empty %}
+          <li class="list-group-item">No bookmarks found.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Bookmark - MindVault{% endblock %}
+
+{% block content %}
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3>Edit Bookmark</h3>
+      <a class="btn boc" href="{% url 'admin_user_detail' bookmark.user.id %}">Back</a>
+    </div>
+
+    <div class="card p-3">
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn bgrd" type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

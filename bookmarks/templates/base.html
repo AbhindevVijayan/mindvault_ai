@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}MindVault{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/aos.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/swiper-bundle.min.css' %}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.4/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="{% static 'css/magnific-popup.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+    {% block head_extra %}{% endblock %}
+    <style>
+      /* small helpers for admin pages */
+      .admin-panel .card { border-radius: 12px; }
+    </style>
+  </head>
+  <body>
+    <!-- Main navbar (shared) -->
+    <nav id="nbar">
+      <div class="container">
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <a href="/" class="d-flex align-items-center gap-2" style="font-size:1.2rem;font-weight:700;color:var(--tx)">
+            <div class="logo-i"><i class="fa-solid fa-brain"></i></div>
+            <span>MindVault</span>
+          </a>
+          <div class="d-none d-lg-flex align-items-center gap-1 mx-auto">
+            <a href="#" class="nav-link">My Articles</a>
+            <a href="#" class="nav-link">Smart Search</a>
+            <a href="#" class="nav-link">Collections</a>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="boc d-flex align-items-center justify-content-center" id="thbtn" style="width:38px;height:38px;padding:0;border-radius:12px" aria-label="Toggle theme">
+              <i class="fa-solid fa-sun" id="suni" style="display:none"></i>
+              <i class="fa-solid fa-moon" id="mooni"></i>
+            </button>
+            <a href="#articles" class="boc px-3 py-2 d-none d-sm-flex align-items-center gap-1">
+              <i class="fa-solid fa-bookmark fa-sm"></i> My Bookmarks
+            </a>
+            <button class="boc px-3 py-2 d-none d-sm-flex align-items-center gap-1" onclick="logout()">
+              <i class="fa-solid fa-right-from-bracket fa-sm"></i> Log Out
+            </button>
+            <button class="boc d-lg-none px-2 py-2" id="mbtog" style="border-radius:10px">
+              <i class="fa-solid fa-bars" id="barIcon"></i>
+              <i class="fa-solid fa-xmark" id="xIcon" style="display:none"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div id="mbmenu">
+      <a href="#" class="nav-link d-block py-3 border-bottom" style="border-color:var(--bd)!important">My Articles</a>
+      <a href="#" class="nav-link d-block py-3 border-bottom" style="border-color:var(--bd)!important">Smart Search</a>
+      <a href="#" class="nav-link d-block py-3 border-bottom" style="border-color:var(--bd)!important">Collections</a>
+      <div class="d-flex gap-2 mt-3">
+        <button class="boc flex-fill py-2 btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket me-1"></i>Log Out</button>
+      </div>
+    </div>
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

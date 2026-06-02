@@ -9,6 +9,9 @@ from .forms import BookmarkForm, LoginForm, SignupForm
 from .search_forms import SearchForm
 from .models import Bookmark
 from .utils import chat_response
+from .forms import AdminUserForm, AdminBookmarkForm
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import get_object_or_404
 
 
 def index(request):
@@ -151,6 +154,123 @@ def chat(request):
 
     reply = chat_response(question)
     return JsonResponse({'reply': reply})
+
+
+@staff_member_required
+def admin_panel(request):
+    from django.utils import timezone
+    from datetime import timedelta
+    users = User.objects.all().order_by('-date_joined')
+    user_stats = []
+    for u in users:
+        count = Bookmark.objects.filter(user=u).count()
+        user_stats.append({'user': u, 'bookmark_count': count})
+
+    # Site-wide metrics
+    total_users = User.objects.count()
+    total_bookmarks = Bookmark.objects.count()
+    active_users = User.objects.filter(is_active=True).count()
+    staff_users = User.objects.filter(is_staff=True).count()
+
+    # Last 7 days labels and counts
+    labels = []
+    signup_counts = []
+    bookmark_counts = []
+    today = timezone.now().date()
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        labels.append(day.strftime('%Y-%m-%d'))
+        sc = User.objects.filter(date_joined__date=day).count()
+        bc = Bookmark.objects.filter(created_at__date=day).count()
+        signup_counts.append(sc)
+        bookmark_counts.append(bc)
+
+    # Top users by bookmark count
+    top_users = []
+    users_with_counts = []
+    for u in User.objects.all():
+        users_with_counts.append((Bookmark.objects.filter(user=u).count(), u))
+    users_with_counts.sort(reverse=True, key=lambda x: x[0])
+    for cnt, u in users_with_counts[:5]:
+        top_users.append({'user': u, 'count': cnt})
+
+    context = {
+        'user_stats': user_stats,
+        'total_users': total_users,
+        'total_bookmarks': total_bookmarks,
+        'active_users': active_users,
+        'staff_users': staff_users,
+        'labels': labels,
+        'signup_counts': signup_counts,
+        'bookmark_counts': bookmark_counts,
+        'top_users': top_users,
+    }
+
+    return render(request, 'admin_panel.html', context)
+
+
+@staff_member_required
+def admin_users_list(request):
+    users = User.objects.all().order_by('-date_joined')
+    user_rows = []
+    for u in users:
+        cnt = Bookmark.objects.filter(user=u).count()
+        user_rows.append({'user': u, 'bookmark_count': cnt})
+    return render(request, 'admin_users.html', {'users': user_rows})
+
+
+@staff_member_required
+def admin_bookmarks_list(request):
+    bookmarks = Bookmark.objects.select_related('user').order_by('-created_at')[:200]
+    return render(request, 'admin_bookmarks.html', {'bookmarks': bookmarks})
+
+
+@staff_member_required
+def admin_user_detail(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    bookmarks = Bookmark.objects.filter(user=user).order_by('-created_at')
+
+    if request.method == 'POST':
+        if 'update_user' in request.POST:
+            form = AdminUserForm(request.POST, instance=user)
+            if form.is_valid():
+                form.save()
+                return redirect('admin_user_detail', user_id=user.id)
+        elif 'delete_bookmark' in request.POST:
+            bid = request.POST.get('delete_bookmark')
+            b = get_object_or_404(Bookmark, pk=bid, user=user)
+            b.delete()
+            return redirect('admin_user_detail', user_id=user.id)
+        elif 'edit_bookmark' in request.POST:
+            bid = request.POST.get('edit_bookmark')
+            b = get_object_or_404(Bookmark, pk=bid, user=user)
+            form = AdminBookmarkForm(request.POST, instance=b)
+            if form.is_valid():
+                form.save()
+                return redirect('admin_user_detail', user_id=user.id)
+
+    user_form = AdminUserForm(instance=user)
+    bookmark_forms = {b.id: AdminBookmarkForm(instance=b) for b in bookmarks}
+
+    return render(request, 'admin_user.html', {
+        'user_obj': user,
+        'bookmarks': bookmarks,
+        'user_form': user_form,
+        'bookmark_forms': bookmark_forms
+    })
+
+
+@staff_member_required
+def admin_edit_bookmark(request, bookmark_id):
+    b = get_object_or_404(Bookmark, pk=bookmark_id)
+    if request.method == 'POST':
+        form = AdminBookmarkForm(request.POST, instance=b)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_user_detail', user_id=b.user.id)
+    else:
+        form = AdminBookmarkForm(instance=b)
+    return render(request, 'admin_edit_bookmark.html', {'form': form, 'bookmark': b})
 
 
 def semantic_search(request):

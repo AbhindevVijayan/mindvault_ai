@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Users - MindVault{% endblock %}
+
+{% block content %}
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3>Users</h3>
+      <div><a class="btn boc" href="{% url 'admin_panel' %}">Back to Home</a></div>
+    </div>
+
+    <div class="card p-3">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Joined</th>
+            <th>Bookmarks</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in users %}
+          <tr>
+            <td>{{ item.user.username }}</td>
+            <td>{{ item.user.email }}</td>
+            <td>{{ item.user.date_joined }}</td>
+            <td>{{ item.bookmark_count }}</td>
+            <td><a class="btn btn-sm boc" href="{% url 'admin_user_detail' item.user.id %}">View</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

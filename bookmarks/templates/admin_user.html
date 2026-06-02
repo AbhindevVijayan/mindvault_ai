@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin User - MindVault{% endblock %}
+
+{% block content %}
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3>User: {{ user_obj.username }}</h3>
+      <div>
+        <a class="btn boc" href="{% url 'admin_panel' %}">Back to Admin</a>
+      </div>
+    </div>
+
+    <div class="card p-3 mb-4">
+      <h5>User Details</h5>
+      <form method="post">
+        {% csrf_token %}
+        {{ user_form.as_p }}
+        <button class="btn bgrd" type="submit" name="update_user">Save</button>
+      </form>
+    </div>
+
+    <div class="card p-3">
+      <h5>Bookmarks ({{ bookmarks.count }})</h5>
+      {% for b in bookmarks %}
+        <div class="mb-3" style="border-bottom:1px solid var(--bd);padding-bottom:10px">
+          <div style="font-weight:600">{{ b.title }}</div>
+          <div style="font-size:.9rem;color:var(--tx3)">{{ b.url }}</div>
+          <div class="mt-2">{{ b.summary|linebreaksbr }}</div>
+          <div class="mt-2">
+            <a class="btn boc btn-sm" href="{% url 'admin_edit_bookmark' b.id %}">Edit</a>
+
+            <form method="post" style="display:inline;margin-left:8px">
+              {% csrf_token %}
+              <button class="btn btn-danger btn-sm" type="submit" name="delete_bookmark" value="{{ b.id }}">Delete</button>
+            </form>
+          </div>
+        </div>
+      {% empty %}
+        <div>No bookmarks.</div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Panel - MindVault{% endblock %}
+
+{% block content %}
+  <div class="container py-4 admin-panel">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3>Admin Panel</h3>
+      <div>
+        <a class="btn boc" href="/">View Site</a>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card p-3 text-center">
+          <div class="fs-6">Total Users</div>
+          <div class="h2 fw-bold" id="stat-users">{{ total_users }}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3 text-center">
+          <div class="fs-6">Total Bookmarks</div>
+          <div class="h2 fw-bold" id="stat-bookmarks">{{ total_bookmarks }}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3 text-center">
+          <div class="fs-6">Active Users</div>
+          <div class="h2 fw-bold" id="stat-active">{{ active_users }}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3 text-center">
+          <div class="fs-6">Admin Users</div>
+          <div class="h2 fw-bold" id="stat-staff">{{ staff_users }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-lg-8">
+        <div class="card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="fw-bold">Site Activity (Last 7 days)</div>
+            <div class="text-muted">Daily signups and bookmarks</div>
+          </div>
+          <canvas id="activityChart" height="120"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card p-3 mb-3">
+          <div class="fw-bold mb-2">Top Users (by bookmarks)</div>
+          <ul class="list-group list-group-flush">
+            {% for u in top_users %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>{{ u.user.username }}</div>
+                <span class="badge bg-primary rounded-pill">{{ u.count }}</span>
+              </li>
+            {% empty %}
+              <li class="list-group-item">No data</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/chart.umd.min.js' %}"></script>
+  <script>
+    function animateCount(id, target) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const start = 0;
+      const end = parseInt(target, 10) || 0;
+      const duration = 1000;
+      let startTime = null;
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        el.textContent = Math.floor(progress * (end - start) + start);
+        if (progress < 1) window.requestAnimationFrame(step);
+      }
+      window.requestAnimationFrame(step);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      animateCount('stat-users', {{ total_users }});
+      animateCount('stat-bookmarks', {{ total_bookmarks }});
+      animateCount('stat-active', {{ active_users }});
+      animateCount('stat-staff', {{ staff_users }});
+
+      const labels = {{ labels|safe }};
+      const signups = {{ signup_counts|safe }};
+      const bookmarks = {{ bookmark_counts|safe }};
+
+      const ctx = document.getElementById('activityChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Signups', data: signups, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.12)', tension: 0.3 },
+            { label: 'Bookmarks', data: bookmarks, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', tension: 0.3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'top' } },
+          scales: { x: { display: true }, y: { beginAtZero: true } }
+        }
+      });
+    });
+  </script>
+{% endblock %}

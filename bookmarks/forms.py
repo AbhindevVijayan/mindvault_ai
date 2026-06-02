@@ -71,3 +71,16 @@ class SignupForm(forms.Form):
         username = self._generate_username(email)
         user = User.objects.create_user(username=username, email=email, password=password1)
         return user
+
+
+class AdminUserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email', 'is_active', 'is_staff']
+
+
+class AdminBookmarkForm(forms.ModelForm):
+    class Meta:
+        from .models import Bookmark
+        model = Bookmark
+        fields = ['title', 'url', 'summary', 'tags']

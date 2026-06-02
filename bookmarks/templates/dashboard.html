@@ -278,7 +278,9 @@
          function getCSRFToken() {
             const name = 'csrftoken=';
             const cookie = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name));
-            return cookie ? cookie.substring(name.length) : '';
+            if (cookie) return cookie.substring(name.length);
+            const hidden = document.querySelector('#chatForm input[name="csrfmiddlewaretoken"]');
+            return hidden ? hidden.value : '';
          }
 
          function openChat() {

@@ -13,8 +13,8 @@
       <link href="{% static 'css/aos.css' %}" rel="stylesheet"/>
       <!-- Swiper -->
       <link href="{% static 'css/swiper-bundle.min.css' %}" rel="stylesheet"/>
-      <!-- all min css -->
-      <link rel="stylesheet" href="{% static 'css/all.min.css' %}"/>
+      <!-- Font Awesome -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.4/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
       <link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}"/>
       <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
    </head>
@@ -630,11 +630,11 @@
             <div id="fLogin">
                <form method="POST" action="/login/" id="loginForm">
                   {% csrf_token %}
-                  <div id="loginErr" class="err-msg"><i class="fa-solid fa-circle-exclamation me-1"></i><span id="loginErrMsg">Invalid email or password.</span></div>
+                  <div id="loginErr" class="err-msg"{% if login_error %} style="display:block"{% endif %}><i class="fa-solid fa-circle-exclamation me-1"></i><span id="loginErrMsg">{% if login_error %}{{ login_error }}{% else %}Invalid email or password.{% endif %}</span></div>
                   <label class="olbl"><i class="fa-regular fa-envelope me-1"></i>Email address</label>
-                  <input class="oinp" type="email" id="loginEmail" name="loginEmail" placeholder="you@company.com" required>
+                  <input class="oinp" type="email" id="loginEmail" name="email" placeholder="you@company.com" value="{{ login_email|default:'' }}" required>
                   <label class="olbl"><i class="fa-solid fa-lock me-1"></i>Password</label>
-                  <input class="oinp" type="password" id="loginPass" name="loginPass" placeholder="********" required>
+                  <input class="oinp" type="password" id="loginPass" name="password" placeholder="********" required>
                   <div class="text-end mb-3" style="margin-top:-8px"><a href="#" style="font-size:.8rem;color:var(--pur)">Forgot password?</a></div>
                   <button class="bgrd btn w-100 py-3 fw-semibold fs-6" id="loginBtn" type="submit">Log In <i class="fa-solid fa-arrow-right ms-1 fa-sm"></i></button>
                </form>
@@ -647,11 +647,9 @@
             <div id="fSignup" style="display:none">
                <form method="POST" action="/signup/" id="signupForm">
                   {% csrf_token %}
-                  <div id="signupErr" class="err-msg"><i class="fa-solid fa-circle-exclamation me-1"></i><span id="signupErrMsg">Please fill all fields.</span></div>
-                  <label class="olbl"><i class="fa-regular fa-user me-1"></i>Full name</label>
-                  <input class="oinp" type="text" id="signupName" name="username" placeholder="Jane Smith" required>
-                  <label class="olbl"><i class="fa-regular fa-envelope me-1"></i>Work email</label>
-                  <input class="oinp" type="email" id="signupEmail" name="email" placeholder="you@company.com" required>
+                  <div id="signupErr" class="err-msg"{% if signup_error %} style="display:block"{% endif %}><i class="fa-solid fa-circle-exclamation me-1"></i><span id="signupErrMsg">{% if signup_error %}{{ signup_error }}{% else %}Please fill all fields.{% endif %}</span></div>
+                  <label class="olbl"><i class="fa-regular fa-envelope me-1"></i>Email</label>
+                  <input class="oinp" type="email" id="signupEmail" name="email" placeholder="you@company.com" value="{{ signup_email|default:'' }}" required>
                   <label class="olbl"><i class="fa-solid fa-lock me-1"></i>Password</label>
                   <input class="oinp" type="password" id="signupPass" name="password1" placeholder="Min. 8 characters" required>
                   <button class="bgrd btn w-100 py-3 fw-semibold fs-6" id="signupBtn" type="submit">Create Free Account <i class="fa-solid fa-arrow-right ms-1 fa-sm"></i></button>
@@ -1402,5 +1400,18 @@
       <script src="{% static 'js/chart.umd.min.js' %}"></script>
       <script src="{% static 'js/jquery.magnific-popup.min.js' %}"></script>
       <script src="{% static 'js/main.js' %}"></script>
+      <script>
+         {% if show_signup_modal or login_error or signup_error %}
+         document.addEventListener('DOMContentLoaded', function() {
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('lofc'));
+            offcanvas.show();
+            {% if signup_error %}
+            swTab('signup');
+            {% else %}
+            swTab('login');
+            {% endif %}
+         });
+         {% endif %}
+      </script>
    </body>
 </html>

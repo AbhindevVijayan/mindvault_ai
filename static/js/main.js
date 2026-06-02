@@ -52,9 +52,9 @@ const rvObs = new IntersectionObserver(
     entries => entries.forEach(e => {
         if (e.isIntersecting) e.target.classList.add('in');
     }), {
-        threshold: 0.1,
-        rootMargin: '0px 0px -40px 0px'
-    }
+    threshold: 0.1,
+    rootMargin: '0px 0px -40px 0px'
+}
 );
 document.querySelectorAll('.rv').forEach(el => rvObs.observe(el));
 
@@ -75,7 +75,7 @@ $('.vidpop').magnificPopup({
 });
 
 /*  PRICING TOGGLE  */
-document.getElementById('ptog').addEventListener('change', function() {
+document.getElementById('ptog').addEventListener('change', function () {
     const y = this.checked;
     document.getElementById('ptogThumb').style.transform = y ? 'translateX(24px)' : 'translateX(0)';
     document.querySelectorAll('.pv').forEach(el => el.textContent = y ? el.dataset.y : el.dataset.m);
@@ -274,7 +274,7 @@ function initOverviewChart() {
     g.addColorStop(1, 'rgba(59,130,246,0.02)');
     const labels = Array.from({
         length: 30
-    }, (_, i) => `${i+1}`);
+    }, (_, i) => `${i + 1}`);
     const data = [420, 480, 510, 440, 600, 580, 720, 690, 750, 810, 780, 860, 820, 900, 940, 880, 960, 1020, 1100, 1080, 1150, 1200, 1180, 1260, 1310, 1280, 1350, 1400, 1460, 1520];
     const {
         grid,
@@ -370,27 +370,27 @@ function initAnalyticsChart() {
         data: {
             labels: months,
             datasets: [{
-                    label: 'Conversations',
-                    data: [8200, 9100, 10400, 9800, 11200, 12800, 14100, 15600, 17200, 19000, 21400, 24800],
-                    fill: true,
-                    backgroundColor: g1,
-                    borderColor: '#8b5cf6',
-                    borderWidth: 2.5,
-                    pointRadius: 3,
-                    pointBackgroundColor: '#8b5cf6',
-                    tension: .4
-                },
-                {
-                    label: 'Resolved by AI',
-                    data: [6560, 7644, 8736, 8330, 9632, 11264, 12408, 13728, 15136, 16720, 18834, 22016],
-                    fill: true,
-                    backgroundColor: g2,
-                    borderColor: '#34d399',
-                    borderWidth: 2,
-                    pointRadius: 3,
-                    pointBackgroundColor: '#34d399',
-                    tension: .4
-                }
+                label: 'Conversations',
+                data: [8200, 9100, 10400, 9800, 11200, 12800, 14100, 15600, 17200, 19000, 21400, 24800],
+                fill: true,
+                backgroundColor: g1,
+                borderColor: '#8b5cf6',
+                borderWidth: 2.5,
+                pointRadius: 3,
+                pointBackgroundColor: '#8b5cf6',
+                tension: .4
+            },
+            {
+                label: 'Resolved by AI',
+                data: [6560, 7644, 8736, 8330, 9632, 11264, 12408, 13728, 15136, 16720, 18834, 22016],
+                fill: true,
+                backgroundColor: g2,
+                borderColor: '#34d399',
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: '#34d399',
+                tension: .4
+            }
             ]
         },
         options: {
@@ -464,7 +464,13 @@ function updateChartColors() {
     });
 }
 
-/*  AI CHAT (Anthropic API)  */
+/*  AI CHAT (backend OpenAI / fallback)  */
+function getCSRFToken() {
+    const name = 'csrftoken=';
+    const cookie = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name));
+    return cookie ? cookie.substring(name.length) : '';
+}
+
 async function sendChat() {
     const inp = document.getElementById('chatInp');
     const msg = inp.value.trim();
@@ -479,33 +485,32 @@ async function sendChat() {
     document.getElementById('chatSendBtn').disabled = true;
     const typingId = appendTyping();
     try {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
+        const res = await fetch('/chat/', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCSRFToken()
             },
-            body: JSON.stringify({
-                model: 'claude-sonnet-4-20250514',
-                max_tokens: 1000,
-                system: `You are NexusAI, an intelligent AI assistant built into the NexusAI business automation platform. The user is ${currentUser?.name || 'a user'} on the ${currentUser?.plan || 'Pro'} plan. You help with: AI agent performance, support ticket analytics, workflow automation suggestions, business metrics insights, and platform usage. Current platform stats: 24.8K conversations today, 98.2% resolution rate, 1.4s avg response, $18.2K monthly savings, 4 active agents. Be concise, professional, and data-driven. Use emojis sparingly.`,
-                messages: chatHistory
-            })
+            body: new URLSearchParams({ question: msg })
         });
         removeTyping(typingId);
         if (res.ok) {
             const data = await res.json();
-            const reply = data.content?.find(b => b.type === 'text')?.text || 'I could not generate a response.';
+            const reply = data.reply || 'I could not generate a response.';
             chatHistory.push({
                 role: 'assistant',
                 content: reply
             });
             appendMsg(reply, 'ai');
+        } else if (res.status === 403) {
+            appendMsg('Please log in to use chat.', 'ai');
         } else {
-            appendMsg('âš ï¸ Sorry, I had trouble connecting. Please check your API key or try again.', 'ai');
+            appendMsg('Sorry, I had trouble connecting. Please try again.', 'ai');
         }
     } catch (e) {
         removeTyping(typingId);
-        appendMsg('âš ï¸ Network error. Please ensure you are connected to the internet.', 'ai');
+        appendMsg('Network error. Please ensure you are connected to the internet.', 'ai');
     }
     document.getElementById('chatSendBtn').disabled = false;
 }
@@ -519,23 +524,23 @@ function appendMsg(text, role) {
     const wrap = document.createElement('div');
     wrap.className = 'd-flex flex-column gap-1';
     wrap.innerHTML = `
-    <div class="msg msg-${role}" style="animation:fadeIn .3s ease">${escapeHtml(text).replace(/\n/g,'<br>')}</div>
-    <div class="msg-time" style="align-self:${role==='ai'?'flex-start':'flex-end'};padding:0 4px">${role==='ai'?'NexusAI':'You'} Â· ${time}</div>`;
+    <div class="msg msg-${role}" style="animation:fadeIn .3s ease">${escapeHtml(text).replace(/\n/g, '<br>')}</div>
+    <div class="msg-time" style="align-self:${role === 'ai' ? 'flex-start' : 'flex-end'};padding:0 4px">${role === 'ai' ? 'NexusAI' : 'You'} Â· ${time}</div>`;
     body.appendChild(wrap);
     body.scrollTop = body.scrollHeight;
 }
 
 let typingCounter = 0;
 
-function appendTyping() {
+function appendTyping(container = document.getElementById('chatBody')) {
     const id = 'typ-' + (++typingCounter);
-    const body = document.getElementById('chatBody');
+    if (!container) return id;
     const el = document.createElement('div');
     el.id = id;
     el.className = 'typing-ind';
     el.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
-    body.appendChild(el);
-    body.scrollTop = body.scrollHeight;
+    container.appendChild(el);
+    container.scrollTop = container.scrollHeight;
     return id;
 }
 
@@ -563,7 +568,7 @@ function escapeHtml(t) {
 }
 
 /*  AUTO RESIZE TEXTAREA  */
-document.getElementById('chatInp')?.addEventListener('input', function() {
+document.getElementById('chatInp')?.addEventListener('input', function () {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 100) + 'px';
 });

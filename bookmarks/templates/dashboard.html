@@ -1,71 +1,361 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en" id="htmlRoot">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>MindVault Dashboard</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+      <!-- Bootstrap 5.3 -->
+      <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"/>
+      <!-- AOS Animate on Scroll -->
+      <link href="{% static 'css/aos.css' %}" rel="stylesheet"/>
+      <!-- Swiper -->
+      <link href="{% static 'css/swiper-bundle.min.css' %}" rel="stylesheet"/>
+      <!-- Font Awesome -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.4/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+      <link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}"/>
+      <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+      <style>
+         .summary-card-fullscreen {
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            background: var(--bg);
+            border-radius: 0;
+            box-shadow: none;
+            overflow: auto;
+            padding: 36px;
+         }
+         .summary-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+         }
+         .summary-toolbar .summary-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+         }
+         .summary-toolbar button {
+            min-width: 42px;
+         }
+         .chat-panel {
+            background: var(--bg3);
+            border: 1px solid var(--bd);
+            border-radius: 20px;
+            padding: 24px;
+            margin-top: 24px;
+         }
+         .chat-messages {
+            max-height: 320px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 16px;
+            background: var(--bg);
+            border: 1px solid var(--bd);
+         }
+         .chat-message {
+            max-width: 84%;
+            padding: 14px 16px;
+            border-radius: 18px;
+            line-height: 1.7;
+         }
+         .chat-message.user {
+            align-self: flex-end;
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--tx);
+         }
+         .chat-message.ai {
+            align-self: flex-start;
+            background: rgba(107, 114, 128, 0.12);
+            color: var(--tx);
+         }
+      </style>
+   </head>
+   <body>
+      <!-- ======================== DASHBOARD PAGE ======================== -->
+      <div id="landing">
+         <!-- NAVBAR -->
+         <nav id="nbar">
+            <div class="container">
+               <div class="d-flex align-items-center justify-content-between w-100">
+                  <a href="/" class="d-flex align-items-center gap-2" style="font-size:1.2rem;font-weight:700;color:var(--tx)">
+                     <div class="logo-i"><i class="fa-solid fa-brain"></i></div>
+                     <span>MindVault</span>
+                  </a>
+                  <div class="d-none d-lg-flex align-items-center gap-1 mx-auto">
+                     <a href="#" class="nav-link">My Articles</a>
+                     <a href="#" class="nav-link">Smart Search</a>
+                     <a href="#" class="nav-link">Collections</a>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                     <button class="boc d-flex align-items-center justify-content-center" id="thbtn" style="width:38px;height:38px;padding:0;border-radius:12px" aria-label="Toggle theme">
+                     <i class="fa-solid fa-sun" id="suni" style="display:none"></i>
+                     <i class="fa-solid fa-moon" id="mooni"></i>
+                     </button>
+                     <a href="#articles" class="boc px-3 py-2 d-none d-sm-flex align-items-center gap-1">
+                     <i class="fa-solid fa-bookmark fa-sm"></i> My Bookmarks
+                     </a>
+                     <button class="boc px-3 py-2 d-none d-sm-flex align-items-center gap-1" onclick="logout()">
+                     <i class="fa-solid fa-right-from-bracket fa-sm"></i> Log Out
+                     </button>
+                     <button class="boc d-lg-none px-2 py-2" id="mbtog" style="border-radius:10px">
+                     <i class="fa-solid fa-bars" id="barIcon"></i>
+                     <i class="fa-solid fa-xmark" id="xIcon" style="display:none"></i>
+                     </button>
+                  </div>
+               </div>
+            </div>
+         </nav>
+         <div id="mbmenu">
+            <a href="#" class="nav-link d-block py-3 border-bottom" style="border-color:var(--bd)!important">My Articles</a>
+            <a href="#" class="nav-link d-block py-3 border-bottom" style="border-color:var(--bd)!important">Smart Search</a>
+            <a href="#" class="nav-link d-block py-3 border-bottom" style="border-color:var(--bd)!important">Collections</a>
+            <div class="d-flex gap-2 mt-3">
+               <button class="boc flex-fill py-2 btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket me-1"></i>Log Out</button>
+            </div>
+         </div>
+         <!-- HERO / WELCOME -->
+         <section id="hero" style="padding:80px 0 60px">
+            <div class="aur aur-a" style="top:-80px;left:-120px"></div>
+            <div class="aur aur-b" style="top:180px;right:-180px"></div>
+            <div class="container position-relative" style="z-index:2">
+               <div class="text-center">
+                  <h1 class="h1 afu" style="animation-delay:.12s">Welcome back, <span class="gt">{{ request.user.email }}</span></h1>
+                  <p class="mx-auto afu" style="max-width:580px;font-size:clamp(.95rem,1.8vw,1.2rem);color:var(--tx2);margin-bottom:36px;animation-delay:.2s">Your saved articles and AI summaries are here. Paste a new link to summarize it instantly.</p>
+                  <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap afu" style="animation-delay:.28s">
+                     <a href="#articles" class="boc btn px-4 py-3 fs-6"><i class="fa-solid fa-bookmark me-2"></i>My Bookmarks</a>
+                  </div>
+                  <div class="row justify-content-center mt-4">
+                     <div class="col-lg-10">
+                        <form method="POST" action="{% url 'summarize' %}" class="row g-2 align-items-center justify-content-center">
+                           {% csrf_token %}
+                           <input type="hidden" name="next_page" value="dashboard" />
+                           <div class="col-md-8">
+                              <input type="url" name="url" placeholder="Paste article URL to summarize" required class="form-control oinp" />
+                           </div>
+                           <div class="col-md-4 d-grid">
+                              <button type="submit" class="bgrd btn py-3">Summarize Article</button>
+                           </div>
+                           {% if summary_error %}
+                           <div class="col-12 text-danger text-center" style="font-size:.95rem">{{ summary_error }}</div>
+                           {% endif %}
+                        </form>
+                        <div class="mt-3 d-flex justify-content-center">
+                           <button type="button" class="bgrd btn py-3" onclick="openChat()"><i class="fa-solid fa-comments me-2"></i> Open AI Chat</button>
+                        </div>
+                        {% if summary_result %}
+                        <div id="summaryCard" class="mt-4 p-4" style="background:var(--bg3);border:1px solid var(--bd);border-radius:20px">
+                           <div class="summary-toolbar mb-3">
+                              <div>
+                                 <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.14em;color:var(--tx3);font-weight:700">AI Summary Preview</div>
+                                 <div style="font-size:1.05rem;font-weight:700;margin-top:.5rem">{{ source_title }}</div>
+                                 <div style="font-size:.82rem;color:var(--tx2);">{{ summary_url }}</div>
+                              </div>
+                              <div class="summary-actions">
+                                 <button type="button" class="boc btn py-2" onclick="toggleSummaryFullscreen()" title="Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                                 <button type="button" class="bgrd btn py-2" onclick="openChat()" title="Open chat"><i class="fa-solid fa-comments"></i> Chat</button>
+                              </div>
+                           </div>
+                           <p id="summaryText" style="line-height:1.9;color:var(--tx2);">{{ summary_result }}</p>
+                        </div>
+                        {% endif %}
+                        <div id="chatPanel" class="chat-panel" style="display:none">
+                           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                              <div>
+                                 <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.14em;color:var(--tx3);font-weight:700">AI Chat</div>
+                                 <div style="font-size:.82rem;color:var(--tx2);">Ask any question, even if it is not about the summary.</div>
+                              </div>
+                              <button type="button" class="boc btn py-2" onclick="closeChat()"><i class="fa-solid fa-xmark"></i> Close</button>
+                           </div>
+                           <div id="chatMessages" class="chat-messages">
+                              <div class="chat-message ai">Hi there! Ask me anything and I’ll reply right away.</div>
+                           </div>
+                           <form id="chatForm" class="row g-2 align-items-center" action="{% url 'chat' %}" method="POST" onsubmit="return sendDashboardChat(event)">
+                              {% csrf_token %}
+                              <div class="col-md-9">
+                                 <input type="text" id="chatInput" name="question" class="form-control oinp" placeholder="Type your question here" autocomplete="off" required />
+                              </div>
+                              <div class="col-md-3 d-grid">
+                                 <button type="submit" class="bgrd btn py-3">Send</button>
+                              </div>
+                           </form>
+                           <div id="chatLoading" class="text-center mt-3" style="display:none;color:var(--tx3)">Processing your question...</div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <!-- MY ARTICLES -->
+         <section id="articles" class="sp" style="background:var(--bg2)">
+            <div class="container">
+               <div class="text-center mb-5 rv">
+                  <span class="slbl">Your Library</span>
+                  <h2 class="stitle">Saved Articles & Summaries</h2>
+                  <p class="ssub mx-auto">{{ bookmarks.count }} article{{ bookmarks.count|pluralize }} saved</p>
+               </div>
+               {% if bookmarks %}
+               <div class="row g-3">
+                  {% for bookmark in bookmarks %}
+                  <div class="col-md-6 col-lg-4 rv" style="transition-delay:{% cycle '.05s' '.1s' '.15s' %}">
+                     <div class="gc p-4 h-100 d-flex flex-column">
+                        <div style="flex:1">
+                           <h3 class="fs-5 fw-semibold mb-2">{{ bookmark.title }}</h3>
+                           <p style="font-size:.875rem;color:var(--tx2);line-height:1.6">{{ bookmark.summary }}</p>
+                        </div>
+                        <div class="mt-3 d-flex gap-2">
+                           <a href="{{ bookmark.url }}" target="_blank" class="boc btn flex-fill py-2 fs-7" style="font-size:.75rem!important"><i class="fa-solid fa-external-link me-1"></i>Open</a>
+                           <button class="bgrd btn flex-fill py-2 fs-7" style="font-size:.75rem!important"><i class="fa-solid fa-trash me-1"></i>Remove</button>
+                        </div>
+                        <div style="font-size:.65rem;color:var(--tx3);margin-top:12px">{{ bookmark.created_at|date:'M d, Y' }}</div>
+                     </div>
+                  </div>
+                  {% endfor %}
+               </div>
+               {% else %}
+               <div class="text-center py-5">
+                  <div style="font-size:3rem;color:var(--pur);margin-bottom:20px"><i class="fa-solid fa-inbox"></i></div>
+                  <h3 class="fw-semibold mb-2">No articles yet</h3>
+                  <p style="color:var(--tx2);margin-bottom:20px">Start by adding your first article to begin building your knowledge vault.</p>
+                  <a href="/" class="bgrd btn px-4 py-2"><i class="fa-solid fa-plus me-2"></i>Add Your First Article</a>
+               </div>
+               {% endif %}
+            </div>
+         </section>
+      </div>
+       <!-- FOOTER -->
+         <footer id="foot">
+            <div class="container">
+               <div class="row g-5 mb-5">
+                  <div class="col-lg-4">
+                     <a class="d-flex align-items-center gap-2 mb-3" href="#" style="font-size:1.15rem;font-weight:700;color:var(--tx)">
+                        <div class="logo-i"><i class="fa-solid fa-layer-group"></i></div>
+                        MindVaultAI
+                     </a>
+                     <p style="font-size:.875rem;color:var(--tx3);line-height:1.65;max-width:280px">The most powerful AI automation platform for modern teams.</p>
+                     <div class="d-flex gap-2 mt-3"><input class="nli" type="email" placeholder="your@email.com" style="max-width:200px"><button class="bgrd btn px-3 py-2" style="font-size:.85rem;white-space:nowrap">Subscribe</button></div>
+                  </div>
+                  <div class="col-6 col-md-2 fcol">
+                     <h5>Product</h5>
+                     <a href="#">Features</a><a href="#">Integrations</a><a href="#">Pricing</a><a href="#">Changelog</a><a href="#">Status</a>
+                  </div>
+                  <div class="col-6 col-md-2 fcol">
+                     <h5>Resources</h5>
+                     <a href="#">Documentation</a><a href="#">API Reference</a><a href="#">Blog</a><a href="#">Case Studies</a><a href="#">Community</a>
+                  </div>
+                  <div class="col-6 col-md-2 fcol">
+                     <h5>Company</h5>
+                     <a href="#">About</a><a href="#">Careers</a><a href="#">Press</a><a href="#">Privacy</a><a href="#">Terms</a>
+                  </div>
+               </div>
+               <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-4" style="border-top:1px solid var(--bd)">
+                  <p style="font-size:.8rem;color:var(--tx3);margin:0">  2025 NexusAI, Inc. All rights reserved by <a target="_blank" class="text-primary fw-bold" href="https://bestwpware.com/">Bestwpware</a> <br> Distributed by <a target="_blank" class="text-primary fw-bold" href="https://themewagon.com">ThemeWagon</a> </p>
+                  <div class="d-flex gap-2"><a href="#" class="sico"><i class="fa-brands fa-x-twitter"></i></a><a href="#" class="sico"><i class="fa-brands fa-github"></i></a><a href="#" class="sico"><i class="fa-brands fa-linkedin-in"></i></a><a href="#" class="sico"><i class="fa-brands fa-discord"></i></a></div>
+               </div>
+            </div>
+         </footer>
+      </div>
+      <!-- ======================== SCRIPTS ======================== -->
+      <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+      <script src="{% static 'js/aos.js' %}"></script>
+      <script src="{% static 'js/main.js' %}"></script>
+      <script>
+         function logout() {
+            if (confirm('Are you sure you want to log out?')) {
+               window.location.href = '/accounts/logout/';
+            }
+         }
 
-<head>
-    <title>Dashboard</title>
+         function getCSRFToken() {
+            const name = 'csrftoken=';
+            const cookie = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name));
+            return cookie ? cookie.substring(name.length) : '';
+         }
 
-    <style>
+         function openChat() {
+            const panel = document.getElementById('chatPanel');
+            if (panel) panel.style.display = 'block';
+            document.getElementById('chatInput')?.focus();
+         }
 
-        body{
-            background:black;
-            color:white;
-            font-family:Arial;
-            padding:40px;
-        }
+         function closeChat() {
+            const panel = document.getElementById('chatPanel');
+            if (panel) panel.style.display = 'none';
+         }
 
-        .card{
-            background:#222;
-            padding:20px;
-            margin-bottom:20px;
-            border-radius:10px;
-        }
+         async function sendDashboardChat(event) {
+            event.preventDefault();
+            const input = document.getElementById('chatInput');
+            const messages = document.getElementById('chatMessages');
+            const loading = document.getElementById('chatLoading');
+            const question = input.value.trim();
+            if (!question) return false;
+            appendChatMessage('user', question);
+            input.value = '';
+            const typingId = appendTyping(messages);
+            if (loading) loading.style.display = 'block';
 
-        a{
-            color:cyan;
-        }
+            try {
+               const response = await fetch('{% url "chat" %}', {
+                  method: 'POST',
+                  credentials: 'same-origin',
+                  headers: {
+                     'Content-Type': 'application/x-www-form-urlencoded',
+                     'X-CSRFToken': getCSRFToken()
+                  },
+                  body: new URLSearchParams({ question })
+               });
 
-    </style>
+               if (!response.ok) {
+                  if (response.status === 403) {
+                     appendChatMessage('ai', 'Please log in to use chat.');
+                  } else {
+                     appendChatMessage('ai', 'Sorry, I had trouble connecting. Please try again.');
+                  }
+                  return false;
+               }
 
-</head>
+               const data = await response.json();
+               appendChatMessage('ai', data.reply || 'Sorry, I could not generate a response.');
+            } catch (err) {
+               appendChatMessage('ai', 'Sorry, I could not reach the chat service. Try again in a moment.');
+            } finally {
+               removeTyping(typingId);
+               if (loading) loading.style.display = 'none';
+            }
+            return false;
+         }
 
-<body>
+         function toggleSummaryFullscreen() {
+            const card = document.getElementById('summaryCard');
+            if (!card) return;
+            const isFull = card.classList.toggle('summary-card-fullscreen');
+            document.body.style.overflow = isFull ? 'hidden' : '';
+            const iconButton = card.querySelector('button[title="Fullscreen"]');
+            if (iconButton) {
+               iconButton.innerHTML = isFull ? '<i class="fa-solid fa-compress"></i>' : '<i class="fa-solid fa-expand"></i>';
+            }
+         }
 
-    <h1>MindVault Dashboard</h1>
+         function appendChatMessage(role, text) {
+            const messages = document.getElementById('chatMessages');
+            if (!messages) return;
+            const msg = document.createElement('div');
+            msg.className = 'chat-message ' + (role === 'user' ? 'user' : 'ai');
+            msg.textContent = text;
+            messages.appendChild(msg);
+            messages.scrollTop = messages.scrollHeight;
+         }
 
-    <p>
-        Welcome {{ request.user.username }}
-    </p>
-
-    <a href="/">
-        Add Bookmark
-    </a>
-
-    <hr>
-
-    {% for bookmark in bookmarks %}
-
-        <div class="card">
-
-            <h2>
-                {{ bookmark.title }}
-            </h2>
-
-            <a href="{{ bookmark.url }}">
-                Open Link
-            </a>
-
-            <p>
-                {{ bookmark.summary }}
-            </p>
-
-        </div>
-
-    {% empty %}
-
-        <h3>No bookmarks yet</h3>
-
-    {% endfor %}
-
-</body>
-
+      </script>
+   </body>
 </html>

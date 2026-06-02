@@ -84,6 +84,12 @@ MindVault is designed to use Ollama for local AI chat first. To install and use 
 ollama pull mistral
 ```
 
+If your machine has limited RAM, use a smaller model instead:
+
+```powershell
+ollama pull orca-mini
+```
+
 3. Confirm Ollama is running:
 
 ```powershell
@@ -112,8 +118,9 @@ If Ollama is unavailable, the system will automatically attempt OpenAI.
 ## Troubleshooting
 
 - If you see `CSRF verification failed`, ensure cookies are enabled and refresh the page before submitting the form.
-- If chat is not responding, verify Ollama is running at `http://localhost:11434`.
-- For slow or failed AI responses, set `OPENAI_API_KEY` in `.env` to enable OpenAI fallback.
+- If chat is not responding, verify Ollama is running at `http://localhost:11434` and that your selected model fits available RAM.
+- If Ollama is not available, local chat will fall back to built-in responses, but those are less detailed.
+- For slow or failed AI responses, use a smaller Ollama model like `orca-mini` or set `OPENAI_API_KEY` in `.env` to enable OpenAI fallback.
 
 ## Notes
 

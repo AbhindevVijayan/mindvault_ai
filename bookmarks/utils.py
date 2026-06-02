@@ -156,20 +156,20 @@ def _call_ollama(question, context_snippets=''):
         import requests
         import json
         import os
-        
-        ollama_url = 'http://localhost:11434/api/generate'
+
+        ollama_url = 'http://127.0.0.1:11434/api/generate'
         system_prompt = (
             'You are a helpful AI assistant for MindVault, an article summarization and smart search platform. '
             'Answer user questions clearly, concisely, and helpfully. '
             'Focus on helping with article summaries, bookmarks, and smart search features.'
         )
-        
+
         if context_snippets:
             system_prompt += '\n\nReference information:\n' + context_snippets
-        
+
         full_prompt = f"{system_prompt}\n\nUser: {question}\nAssistant:"
-        
-        model_name = os.getenv('OLLAMA_MODEL', 'mistral:latest')
+
+        model_name = os.getenv('OLLAMA_MODEL', 'orca-mini')
 
         payload = {
             'model': model_name,
@@ -181,40 +181,55 @@ def _call_ollama(question, context_snippets=''):
             'num_ctx': 2048,
             'num_predict': 256
         }
-        
-        response = requests.post(ollama_url, json=payload, timeout=60)
+
+        response = requests.post(ollama_url, json=payload, timeout=10)
         if response.status_code == 200:
             result = response.json()
             reply = result.get('response', '').strip()
             if reply:
                 return reply
+        else:
+            error_text = response.text.strip().lower()
+            if 'model requires more system memory' in error_text or 'memory' in error_text:
+                return (
+                    'Ollama failed because the selected model needs more memory than is available. '
+                    'Try a smaller model, for example: OLLAMA_MODEL=orca-mini and run `ollama pull orca-mini`.'
+                )
     except Exception:
-        # Ollama HTTP API failed — try CLI fallback using `ollama run`
-        try:
-            import subprocess
-            model_name = os.getenv('OLLAMA_MODEL', 'mistral:latest')
-            proc = subprocess.run(
-                ['ollama', 'run', model_name, full_prompt, '--format', 'json'],
-                capture_output=True,
-                text=True,
-                encoding='utf-8',
-                errors='replace',
-                timeout=120
+        pass
+
+    try:
+        import subprocess
+        import json
+        model_name = os.getenv('OLLAMA_MODEL', 'orca-mini')
+        proc = subprocess.run(
+            ['ollama', 'run', model_name, full_prompt, '--format', 'json'],
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+            timeout=20
+        )
+        output = (proc.stdout or '') + (proc.stderr or '')
+        if proc.returncode == 0 and proc.stdout:
+            try:
+                parsed = json.loads(proc.stdout)
+                for msg in reversed(parsed.get('messages', [])):
+                    if msg.get('role') == 'assistant' and msg.get('content'):
+                        return msg['content'].strip()
+                response_text = parsed.get('response')
+                if isinstance(response_text, str) and response_text.strip():
+                    return response_text.strip()
+            except Exception:
+                return proc.stdout.strip()
+        if 'model requires more system memory' in output.lower() or 'memory' in output.lower():
+            return (
+                'Ollama failed because the selected model needs more memory than is available. '
+                'Try a smaller model, for example: OLLAMA_MODEL=orca-mini and run `ollama pull orca-mini`.'
             )
-            if proc.returncode == 0 and proc.stdout:
-                try:
-                    parsed = json.loads(proc.stdout)
-                    for msg in reversed(parsed.get('messages', [])):
-                        if msg.get('role') == 'assistant' and msg.get('content'):
-                            return msg['content'].strip()
-                    response_text = parsed.get('response')
-                    if isinstance(response_text, str) and response_text.strip():
-                        return response_text.strip()
-                except Exception:
-                    return proc.stdout.strip()
-        except Exception:
-            # If CLI isn't available or fails, fall through to None
-            pass
+    except Exception:
+        pass
+
     return None
 
 
